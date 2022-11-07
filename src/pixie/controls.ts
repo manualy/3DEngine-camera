@@ -3,6 +3,10 @@ export interface Controls {
   isKeyDownPressed: boolean;
   isKeyLeftPressed: boolean;
   isKeyRightPressed: boolean;
+  isKeyZoomInPressed: boolean;
+  isKeyZoomOutPressed: boolean;
+  isKeyTurnLeftPressed: boolean;
+  isKeyTurnRightPressed: boolean;
 }
 
 export const handleKeyUp = (event: KeyboardEvent, controls: Controls) => {
@@ -22,6 +26,22 @@ export const handleKeyUp = (event: KeyboardEvent, controls: Controls) => {
     controls.isKeyRightPressed = false;
     return;
   }
+  if (event.key === "i") {
+    controls.isKeyZoomInPressed = false;
+    return;
+  }
+  if (event.key === "o") {
+    controls.isKeyZoomOutPressed = false;
+    return;
+  }
+  if (event.key === "q") {
+    controls.isKeyTurnLeftPressed = false;
+    return;
+  }
+  if (event.key === "e") {
+    controls.isKeyTurnRightPressed = false;
+    return;
+  }
 };
 
 export const handleKeyDown = (event: KeyboardEvent, controls: Controls) => {
@@ -39,6 +59,22 @@ export const handleKeyDown = (event: KeyboardEvent, controls: Controls) => {
   }
   if (event.key === "d") {
     controls.isKeyRightPressed = true;
+    return;
+  }
+  if (event.key === "i") {
+    controls.isKeyZoomInPressed = true;
+    return;
+  }
+  if (event.key === "o") {
+    controls.isKeyZoomOutPressed = true;
+    return;
+  }
+  if (event.key === "q") {
+    controls.isKeyTurnLeftPressed = true;
+    return;
+  }
+  if (event.key === "e") {
+    controls.isKeyTurnRightPressed = true;
     return;
   }
 };
