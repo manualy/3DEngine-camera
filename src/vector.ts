@@ -1,11 +1,15 @@
 import { Vec3d } from "./basic3DTypes";
 
+export function generateVector(x?: number, y?: number, z?: number, w?: number) {
+  return <Vec3d>{ x: x ? x : 0, y: y ? y : 0, z: z ? z : 0, w: w ? w : 1 };
+}
+
 export function addVectors(vectorOne: Vec3d, vectorTwo: Vec3d) {
-  return {
-    x: vectorOne.x + vectorTwo.x,
-    y: vectorOne.y + vectorTwo.y,
-    z: vectorOne.z + vectorTwo.z,
-  };
+  return generateVector(
+    vectorOne.x + vectorTwo.x,
+    vectorOne.y + vectorTwo.y,
+    vectorOne.z + vectorTwo.z
+  );
 }
 
 export function vectorAdd(vector: Vec3d, number: number) {
@@ -13,15 +17,16 @@ export function vectorAdd(vector: Vec3d, number: number) {
     x: vector.x + number,
     y: vector.y + number,
     z: vector.z + number,
+    w: vector.w,
   };
 }
 
 export function subtractVectors(vectorOne: Vec3d, vectorTwo: Vec3d) {
-  return {
-    x: vectorOne.x - vectorTwo.x,
-    y: vectorOne.y - vectorTwo.y,
-    z: vectorOne.z - vectorTwo.z,
-  };
+  return generateVector(
+    vectorOne.x - vectorTwo.x,
+    vectorOne.y - vectorTwo.y,
+    vectorOne.z - vectorTwo.z
+  );
 }
 
 export function vectorSubtract(vector: Vec3d, number: number) {
@@ -29,6 +34,7 @@ export function vectorSubtract(vector: Vec3d, number: number) {
     x: vector.x - number,
     y: vector.y - number,
     z: vector.z - number,
+    w: vector.w,
   };
 }
 
@@ -37,6 +43,7 @@ export function multiplyVector(vector: Vec3d, value: number) {
     x: vector.x * value,
     y: vector.y * value,
     z: vector.z * value,
+    w: vector.w,
   };
 }
 
@@ -45,6 +52,7 @@ export function divideVector(vector: Vec3d, value: number) {
     x: vector.x / value,
     y: vector.y / value,
     z: vector.z / value,
+    w: vector.w,
   };
 }
 
@@ -57,11 +65,11 @@ export function vectorDotProduct(vectorOne: Vec3d, vectorTwo: Vec3d) {
 }
 
 export function vectorCrossProduct(vectorOne: Vec3d, vectorTwo: Vec3d) {
-  return {
-    x: vectorOne.y * vectorTwo.z - vectorOne.z * vectorTwo.y,
-    y: vectorOne.z * vectorTwo.x - vectorOne.x * vectorTwo.z,
-    z: vectorOne.x * vectorTwo.y - vectorOne.y * vectorTwo.x,
-  };
+  return generateVector(
+    vectorOne.y * vectorTwo.z - vectorOne.z * vectorTwo.y,
+    vectorOne.z * vectorTwo.x - vectorOne.x * vectorTwo.z,
+    vectorOne.x * vectorTwo.y - vectorOne.y * vectorTwo.x
+  );
 }
 
 export function vectorLength(v: Vec3d) {

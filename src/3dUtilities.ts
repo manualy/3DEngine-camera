@@ -1,13 +1,15 @@
 import { Graphics } from "pixi.js";
 import { Mat4x4, Object3D, Triangle, Vec3d } from "./basic3DTypes";
 import {
+  createIdentityMatrix,
   generateTranslationMatrix,
   generateXRotationMatrix,
   generateYRotationMatrix,
   generateZRotationMatrix,
+  multiplyMatrixbyMatrix,
   multiplyMatrixVector,
 } from "./matrix";
-import { addVectors } from "./vector";
+import { addVectors, divideVector } from "./vector";
 
 export interface RotationMatrices {
   rotationXMatrix: Mat4x4;
@@ -28,144 +30,76 @@ export function translateTriangle(
     });
 }
 
-export function rotateTriangle(
-  triangle: Triangle,
-  rotationMatrices: RotationMatrices
-) {
-  triangle.points[0] = multiplyMatrixVector(
-    triangle.points[0],
-    rotationMatrices.rotationXMatrix
-  );
-  triangle.points[1] = multiplyMatrixVector(
-    triangle.points[1],
-    rotationMatrices.rotationXMatrix
-  );
-  triangle.points[2] = multiplyMatrixVector(
-    triangle.points[2],
-    rotationMatrices.rotationXMatrix
-  );
-  triangle.points[0] = multiplyMatrixVector(
-    triangle.points[0],
-    rotationMatrices.rotationYMatrix
-  );
-  triangle.points[1] = multiplyMatrixVector(
-    triangle.points[1],
-    rotationMatrices.rotationYMatrix
-  );
-  triangle.points[2] = multiplyMatrixVector(
-    triangle.points[2],
-    rotationMatrices.rotationYMatrix
-  );
-  triangle.points[0] = multiplyMatrixVector(
-    triangle.points[0],
-    rotationMatrices.rotationZMatrix
-  );
-  triangle.points[1] = multiplyMatrixVector(
-    triangle.points[1],
-    rotationMatrices.rotationZMatrix
-  );
-  triangle.points[2] = multiplyMatrixVector(
-    triangle.points[2],
-    rotationMatrices.rotationZMatrix
-  );
-}
-
-export function rotateVec3d(vector: Vec3d, rotationMatrices: RotationMatrices) {
-  if (rotationMatrices.rotationXMatrix) {
-    const newVector = multiplyMatrixVector(
-      vector,
-      rotationMatrices.rotationXMatrix
-    );
-    vector.x = newVector.x;
-    vector.y = newVector.y;
-    vector.z = newVector.z;
-  }
-  if (rotationMatrices.rotationYMatrix) {
-    const newVector = multiplyMatrixVector(
-      vector,
-      rotationMatrices.rotationYMatrix
-    );
-    vector.x = newVector.x;
-    vector.y = newVector.y;
-    vector.z = newVector.z;
-  }
-  if (rotationMatrices.rotationZMatrix) {
-    const newVector = multiplyMatrixVector(
-      vector,
-      rotationMatrices.rotationZMatrix
-    );
-    vector.x = newVector.x;
-    vector.y = newVector.y;
-    vector.z = newVector.z;
-  }
-}
-
 export function drawObject3D(
   object3D: Object3D,
   projectionMatrix: Mat4x4,
-  viewMatrix: Mat4x4,
   graphics: Graphics
 ) {
+  let worldMatrix = createIdentityMatrix();
   const rotationMatrices = {
     rotationXMatrix: generateXRotationMatrix(object3D.rotation.x),
     rotationYMatrix: generateYRotationMatrix(object3D.rotation.y),
     rotationZMatrix: generateZRotationMatrix(object3D.rotation.z),
   };
-
   const translationMatrix = generateTranslationMatrix(object3D.position);
 
+  worldMatrix = multiplyMatrixbyMatrix(
+    worldMatrix,
+    rotationMatrices.rotationXMatrix
+  );
+  worldMatrix = multiplyMatrixbyMatrix(
+    worldMatrix,
+    rotationMatrices.rotationYMatrix
+  );
+  worldMatrix = multiplyMatrixbyMatrix(
+    worldMatrix,
+    rotationMatrices.rotationZMatrix
+  );
+  worldMatrix = multiplyMatrixbyMatrix(worldMatrix, translationMatrix);
+
   object3D.mesh.forEach((triangle) => {
-    drawTriangle(
-      triangle,
-      rotationMatrices,
-      translationMatrix,
-      viewMatrix,
-      projectionMatrix,
-      graphics
-    );
+    drawTriangle(triangle, worldMatrix, projectionMatrix, graphics);
   });
 }
 
 export function drawTriangle(
   triangle: Triangle,
-  rotationMatrices: RotationMatrices,
-  translatioNMatrix: Mat4x4,
+  worldMatrix: Mat4x4,
   projectionMatrix: Mat4x4,
-  viewMatrix: Mat4x4,
   graphics: Graphics
 ) {
-  const viewedTriangle = <Triangle>{
-    points: [triangle.points[0], triangle.points[1], triangle.points[2]],
-  };
-
-  rotateTriangle(viewedTriangle, rotationMatrices);
-  translateTriangle(viewedTriangle, translatioNMatrix);
-
-  //convert from world -> view
-  viewedTriangle.points[0] = multiplyMatrixVector(
-    viewedTriangle.points[0],
-    viewMatrix
-  );
-  viewedTriangle.points[1] = multiplyMatrixVector(
-    viewedTriangle.points[1],
-    viewMatrix
-  );
-  viewedTriangle.points[2] = multiplyMatrixVector(
-    viewedTriangle.points[2],
-    viewMatrix
-  );
-  //convert from 3d -> 2d
-  const projectedTriangle = <Triangle>{
+  const transformedTriangle = <Triangle>{
     points: [
-      multiplyMatrixVector(viewedTriangle.points[0], projectionMatrix),
-      multiplyMatrixVector(viewedTriangle.points[1], projectionMatrix),
-      multiplyMatrixVector(viewedTriangle.points[2], projectionMatrix),
+      multiplyMatrixVector(triangle.points[0], worldMatrix),
+      multiplyMatrixVector(triangle.points[1], worldMatrix),
+      multiplyMatrixVector(triangle.points[2], worldMatrix),
     ],
   };
 
-  //scale triangle into viewport
+  //convert from 3d -> 2d
+  const projectedTriangle = <Triangle>{
+    points: [
+      multiplyMatrixVector(transformedTriangle.points[0], projectionMatrix),
+      multiplyMatrixVector(transformedTriangle.points[1], projectionMatrix),
+      multiplyMatrixVector(transformedTriangle.points[2], projectionMatrix),
+    ],
+  };
+  // scale into view
+  projectedTriangle.points[0] = divideVector(
+    projectedTriangle.points[0],
+    projectedTriangle.points[0].w
+  );
+  projectedTriangle.points[1] = divideVector(
+    projectedTriangle.points[1],
+    projectedTriangle.points[1].w
+  );
+  projectedTriangle.points[2] = divideVector(
+    projectedTriangle.points[2],
+    projectedTriangle.points[2].w
+  );
 
-  let vectorOffsetView = { x: 1, y: 1, z: 0 };
+  //offset into visible normalised space
+  let vectorOffsetView = { x: 1, y: 1, z: 0, w: 1 };
   projectedTriangle.points[0] = addVectors(
     projectedTriangle.points[0],
     vectorOffsetView

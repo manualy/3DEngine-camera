@@ -10,6 +10,7 @@ export interface Vec3d {
   x: number;
   y: number;
   z: number;
+  w: number;
 }
 
 export interface Triangle {

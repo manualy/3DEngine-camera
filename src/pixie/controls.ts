@@ -7,6 +7,8 @@ export interface Controls {
   isKeyZoomOutPressed: boolean;
   isKeyTurnLeftPressed: boolean;
   isKeyTurnRightPressed: boolean;
+  isKeyGoForwardPressed: boolean;
+  isKeyGoBackwardPressed: boolean;
 }
 
 export const handleKeyUp = (event: KeyboardEvent, controls: Controls) => {
@@ -42,6 +44,14 @@ export const handleKeyUp = (event: KeyboardEvent, controls: Controls) => {
     controls.isKeyTurnRightPressed = false;
     return;
   }
+  if (event.key === "f") {
+    controls.isKeyGoForwardPressed = false;
+    return;
+  }
+  if (event.key === "b") {
+    controls.isKeyGoBackwardPressed = false;
+    return;
+  }
 };
 
 export const handleKeyDown = (event: KeyboardEvent, controls: Controls) => {
@@ -75,6 +85,14 @@ export const handleKeyDown = (event: KeyboardEvent, controls: Controls) => {
   }
   if (event.key === "e") {
     controls.isKeyTurnRightPressed = true;
+    return;
+  }
+  if (event.key === "f") {
+    controls.isKeyGoForwardPressed = true;
+    return;
+  }
+  if (event.key === "b") {
+    controls.isKeyGoBackwardPressed = true;
     return;
   }
 };

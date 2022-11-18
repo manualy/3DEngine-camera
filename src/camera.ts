@@ -6,7 +6,6 @@ export class Camera {
   private __fNear: number;
   private __fFar: number;
   private __fFov: number;
-  private fFovRad: number;
   private appView: ICanvas;
   position: Vec3d;
   rotation: Vec3d;
@@ -17,7 +16,7 @@ export class Camera {
   constructor(
     appView: ICanvas,
     position = { x: 0, y: 0, z: -5 } as Vec3d,
-    rotation = { x: 0, y: 0, z: 0 } as Vec3d,
+    rotation = { x: 0, y: 180, z: 0 } as Vec3d,
     lookDirection = { x: 0, y: 0, z: 1 } as Vec3d,
     fFov = 90,
     fYaw = 0
@@ -30,18 +29,16 @@ export class Camera {
     this.__fFov = fFov;
     this.__fNear = 0.1;
     this.__fFar = 1000;
-    this.fFovRad = 1 / Math.tan(((fFov * 0.5) / 180) * Math.PI);
     this.projectionMatrix = generateProjectionMatrix(
       this.__fFar,
       this.__fNear,
-      this.appView.height / this.appView.width,
-      this.fFovRad
+      this.fFov,
+      this.appView.height / this.appView.width
     );
   }
 
   set fFov(newFFov: number) {
     this.__fFov = newFFov;
-    this.fFovRad = 1 / Math.tan(((newFFov * 0.5) / 180) * Math.PI);
     this.recalculateProjectionMatrix();
   }
 
@@ -53,8 +50,8 @@ export class Camera {
     this.projectionMatrix = generateProjectionMatrix(
       this.__fFar,
       this.__fNear,
-      this.appView.height / this.appView.width,
-      this.fFovRad
+      this.fFov,
+      this.appView.height / this.appView.width
     );
   }
 }

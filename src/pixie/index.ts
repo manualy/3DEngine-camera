@@ -1,14 +1,12 @@
 import * as PIXI from "pixi.js";
-import { drawObject3D, rotateVec3d, RotationMatrices } from "../3dUtilities";
+import { drawObject3D, RotationMatrices } from "../3dUtilities";
 import { Camera } from "../camera";
 import {
+  generateXRotationMatrix,
   generateYRotationMatrix,
-  inversedMatrix,
-  multiplyMatrixVector,
-  pointAtMatrix,
+  generateZRotationMatrix,
 } from "../matrix";
 import { generateScene } from "../sceneGenerator";
-import { addVectors } from "../vector";
 import { Controls, handleKeyDown, handleKeyUp } from "./controls";
 
 export const generatePixiApp = () => {
@@ -60,35 +58,24 @@ export const generatePixiApp = () => {
     if (controls.isKeyDownPressed) camera.position.y -= 0.01 * delta; // Travel Downwards
     if (controls.isKeyLeftPressed) camera.position.x -= 0.01 * delta; // Travel Along X-Axis
     if (controls.isKeyRightPressed) camera.position.x += 0.01 * delta; // Travel Along X-Axis
-    if (controls.isKeyTurnRightPressed) camera.rotation.y += 0.01 * delta; // Travel Along X-Axis
-    if (controls.isKeyTurnLeftPressed) camera.rotation.y -= 0.01 * delta; // Travel Along X-Axis
-    if (controls.isKeyZoomInPressed) camera.fFov -= 1 * delta; // Travel Along X-Axis
-    if (controls.isKeyZoomOutPressed) camera.fFov += 1 * delta; // Travel Along X-Axis
+    if (controls.isKeyGoForwardPressed) camera.position.z += 0.5 * delta; // Travel Along X-Axis
+    if (controls.isKeyGoBackwardPressed) camera.position.z -= 0.5 * delta; // Travel Along X-Axis
+    if (controls.isKeyTurnRightPressed) camera.rotation.y += 0.5 * delta;
+    if (controls.isKeyTurnLeftPressed) camera.rotation.y -= 0.5 * delta;
+    if (controls.isKeyZoomInPressed) camera.fFov -= 1 * delta;
+    if (controls.isKeyZoomOutPressed) camera.fFov += 1 * delta;
 
     const cameraRotationMatrices = <RotationMatrices>{
-      rotationXMatrix: generateYRotationMatrix(camera.rotation.x),
+      rotationXMatrix: generateXRotationMatrix(camera.rotation.x),
       rotationYMatrix: generateYRotationMatrix(camera.rotation.y),
-      rotationZMatrix: generateYRotationMatrix(camera.rotation.z),
+      rotationZMatrix: generateZRotationMatrix(camera.rotation.z),
     };
 
-    const vectorUp = { x: 0, y: 1, z: 0 };
-    let vectorTarget = { x: 0, y: 0, z: 1 };
-    // rotateVec3d(vectorUp, cameraRotationMatrices);
-    rotateVec3d(vectorTarget, cameraRotationMatrices);
-    let vLookDir = multiplyMatrixVector(
-      vectorTarget,
-      cameraRotationMatrices.rotationYMatrix
-    );
-    vectorTarget = addVectors(camera.position, vLookDir);
-    const viewMatrix = inversedMatrix(
-      pointAtMatrix(camera.position, vectorTarget, vectorUp)
-    );
-
     scene.forEach((object3d) => {
-      // object3d.rotation.z = fTheta * 0.02;
-      // object3d.rotation.x = fTheta * 0.01;
-      // object3d.rotation.y = fTheta * 0.01;
-      drawObject3D(object3d, camera.projectionMatrix, viewMatrix, graphics);
+      object3d.rotation.z = fTheta * 0.5;
+      object3d.rotation.x = fTheta * 0.25;
+      object3d.rotation.y = fTheta * 0.25;
+      drawObject3D(object3d, camera.projectionMatrix, graphics);
     });
   });
 };
